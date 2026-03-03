@@ -1,0 +1,3 @@
+[submodule "AI-CTF"]
+	path = AI-CTF
+	url = https://github.com/blackhillsinfosec/AI-CTF.git

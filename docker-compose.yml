@@ -1,0 +1,147 @@
+services:
+  ollama:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.ollama
+    container_name: ollama
+    profiles: ["ollama"]
+    volumes:
+      - ollama:/root/.ollama
+    ports:
+      - "${OLLAMA_PORT:-11435}:11434"
+    environment:
+      - OLLAMA_DEBUG=1
+      - CTF_MODEL=${CTF_MODEL:-llama3.1:8b}
+      - CTF_VISION_MODEL=${CTF_VISION_MODEL:-llama3.2-vision:11b}
+    restart: unless-stopped
+
+  open-webui:
+    build:
+      context: ./AI-CTF
+      dockerfile: Dockerfile.openwebui
+    container_name: open-webui
+    volumes:
+      - open-webui:/app/backend/data
+    ports:
+      - "${OPENWEBUI_PORT:-4242}:8080"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OPENAI_API_BASE_URLS=${OPENAI_API_BASE_URL:-}
+      - OPENAI_API_KEYS=${OPENAI_API_KEY:-}
+      - WEBUI_SECRET_KEY=
+      - ENABLE_RAG_WEB_SEARCH=false
+      - ENABLE_SIGNUP=true
+      - DEFAULT_USER_ROLE=user
+      - ENABLE_ADMIN_EXPORT=true
+      - ENABLE_COMMUNITY_SHARING=false
+      - ENABLE_API_KEY=true
+      - ENABLE_MESSAGE_RATING=false
+      - CTF_FLAG_CHALLENGE_8=${CTF_FLAG_CHALLENGE_8}
+    restart: unless-stopped
+    depends_on:
+      - pipelines
+
+  pipelines:
+    image: ghcr.io/open-webui/pipelines:main
+    container_name: pipelines
+    volumes:
+      - pipelines:/app/pipelines
+    ports:
+      - "${PIPELINES_PORT:-9099}:9099"
+    environment:
+      - PIPELINES_ENV=production
+    restart: unless-stopped
+
+  ctf-jupyter:
+    build:
+      context: ./AI-CTF
+      dockerfile: Dockerfile.jupyter
+    container_name: ctf-jupyter
+    ports:
+      - "${CTF_JUPYTER_PORT:-8888}:8888"
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN:-AntiSyphonBlackHillsTrainingFtw!}
+      - CTF_FLAG_CHALLENGE_7=${CTF_FLAG_CHALLENGE_7}
+    volumes:
+      - ctf-jupyter-work:/home/jovyan/work
+    restart: unless-stopped
+    command: start-notebook.sh --NotebookApp.token='${JUPYTER_TOKEN:-AntiSyphonBlackHillsTrainingFtw!}'
+
+  ctf-setup:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.ctfsetup
+    container_name: ctf-setup
+    environment:
+      - CTF_ADMIN_EMAIL=${CTF_ADMIN_EMAIL}
+      - CTF_ADMIN_PASSWORD=${CTF_ADMIN_PASSWORD}
+      - CTF_ADMIN_NAME=${CTF_ADMIN_NAME}
+      - CTF_USER_EMAIL=${CTF_USER_EMAIL}
+      - CTF_USER_PASSWORD=${CTF_USER_PASSWORD}
+      - CTF_USER_NAME=${CTF_USER_NAME}
+      - OPENWEBUI_URL=${OPENWEBUI_URL}
+      - JUPYTER_PORT=${CTF_JUPYTER_PORT}
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN}
+      - PIPELINES_PORT=${PIPELINES_PORT}
+      - CTF_MODEL=${CTF_MODEL}
+      - CTF_VISION_MODEL=${CTF_VISION_MODEL}
+      - CTF_FLAG_CHALLENGE_1=${CTF_FLAG_CHALLENGE_1}
+      - CTF_FLAG_CHALLENGE_2=${CTF_FLAG_CHALLENGE_2}
+      - CTF_FLAG_CHALLENGE_3=${CTF_FLAG_CHALLENGE_3}
+      - CTF_FLAG_CHALLENGE_4=${CTF_FLAG_CHALLENGE_4}
+      - CTF_FLAG_CHALLENGE_5=${CTF_FLAG_CHALLENGE_5}
+      - CTF_FLAG_CHALLENGE_6=${CTF_FLAG_CHALLENGE_6}
+      - CTF_FLAG_CHALLENGE_7=${CTF_FLAG_CHALLENGE_7}
+      - CTF_FLAG_CHALLENGE_8=${CTF_FLAG_CHALLENGE_8}
+      - CTF_FLAG_CHALLENGE_9=${CTF_FLAG_CHALLENGE_9}
+      - CTF_FLAG_CHALLENGE_10=${CTF_FLAG_CHALLENGE_10}
+      - CTF_FLAG_CHALLENGE_11=${CTF_FLAG_CHALLENGE_11}
+    depends_on:
+      open-webui:
+        condition: service_healthy
+      ctf-jupyter:
+        condition: service_started
+      pipelines:
+        condition: service_started
+    restart: "no"
+
+  notebooks:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.notebooks
+    container_name: notebooks
+    ports:
+      - "${NOTEBOOKS_PORT:-8889}:8888"
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=${NOTEBOOKS_TOKEN:-aisecops2026}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - notebooks-work:/home/jovyan/work
+      - ./notebooks:/home/jovyan/labs:ro
+    restart: unless-stopped
+    command: start-notebook.sh --NotebookApp.token='${NOTEBOOKS_TOKEN:-aisecops2026}'
+
+  deepteam:
+    build:
+      context: ./deepteam
+    container_name: deepteam
+    profiles: ["deepteam"]
+    environment:
+      - OPENAI_API_KEY=${DEEPTEAM_API_KEY:-${OPENAI_API_KEY:-}}
+      - OPENWEBUI_URL=http://open-webui:8080
+    volumes:
+      - deepteam-results:/app/results
+      - ./deepteam/config.yaml:/app/config.yaml:ro
+    restart: "no"
+    stdin_open: true
+    tty: true
+
+volumes:
+  ollama:
+  open-webui:
+  pipelines:
+  ctf-jupyter-work:
+  notebooks-work:
+  deepteam-results:

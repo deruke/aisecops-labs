@@ -1,0 +1,27 @@
+FROM jupyter/scipy-notebook:latest
+
+USER root
+
+# Install ML/AI dependencies for all 9 labs
+RUN pip install --no-cache-dir \
+    transformers \
+    accelerate \
+    bitsandbytes \
+    sentence-transformers \
+    chromadb \
+    umap-learn \
+    deepteam \
+    deepeval \
+    openai \
+    scikit-learn \
+    matplotlib \
+    seaborn \
+    pandas \
+    numpy
+
+# Install CPU-only PyTorch (GPU users use docker-compose.gpu.yml override)
+RUN pip install --no-cache-dir \
+    torch torchvision --index-url https://download.pytorch.org/whl/cpu
+
+USER jovyan
+WORKDIR /home/jovyan

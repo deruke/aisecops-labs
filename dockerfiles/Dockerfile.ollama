@@ -1,0 +1,51 @@
+FROM ollama/ollama:latest
+
+# Create a startup script that pulls models based on env vars
+RUN mkdir -p /scripts
+COPY <<EOF /scripts/startup.sh
+#!/bin/bash
+
+# Start Ollama in the background
+/bin/ollama serve &
+OLLAMA_PID=\$!
+
+# Wait for Ollama to be ready
+echo "Waiting for Ollama to start..."
+sleep 10
+
+# Pull the primary model (skip if it's an OpenAI model)
+CTF_MODEL=\${CTF_MODEL:-llama3.1:8b}
+if [[ "\$CTF_MODEL" != gpt-* ]]; then
+    if ! ollama list | grep -q "\$CTF_MODEL"; then
+        echo "Pulling \$CTF_MODEL model..."
+        ollama pull "\$CTF_MODEL"
+        echo "Model pull complete!"
+    else
+        echo "Model \$CTF_MODEL already exists, skipping pull."
+    fi
+else
+    echo "Skipping pull for OpenAI model: \$CTF_MODEL"
+fi
+
+# Pull the vision model (skip if it's an OpenAI model)
+CTF_VISION_MODEL=\${CTF_VISION_MODEL:-llama3.2-vision:11b}
+if [[ "\$CTF_VISION_MODEL" != gpt-* ]]; then
+    if ! ollama list | grep -q "\$CTF_VISION_MODEL"; then
+        echo "Pulling \$CTF_VISION_MODEL model..."
+        ollama pull "\$CTF_VISION_MODEL"
+        echo "Model pull complete!"
+    else
+        echo "Model \$CTF_VISION_MODEL already exists, skipping pull."
+    fi
+else
+    echo "Skipping pull for OpenAI model: \$CTF_VISION_MODEL"
+fi
+
+# Keep Ollama running in the foreground
+wait \$OLLAMA_PID
+EOF
+
+RUN chmod +x /scripts/startup.sh
+
+# Use the startup script as the entrypoint
+ENTRYPOINT ["/scripts/startup.sh"]

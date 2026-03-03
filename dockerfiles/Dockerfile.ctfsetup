@@ -1,0 +1,28 @@
+FROM python:3.11-slim
+
+# Install dependencies required for the setup script
+RUN apt-get update && apt-get install -y \
+    curl \
+    gettext-base \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python packages
+RUN pip install --no-cache-dir \
+    requests \
+    pydantic \
+    llm-guard
+
+# Set working directory
+WORKDIR /app
+
+# Copy base AI-CTF setup files
+COPY AI-CTF/openwebui/ /app/
+
+# Override config template with our version (supports ${CTF_MODEL} variable)
+COPY overrides/ctf_config.json.template /app/ctf_config.json.template
+
+# Make the setup script executable
+RUN chmod +x /app/run_setup.sh
+
+# Set the default command to run the setup script when the container starts
+CMD ["/app/run_setup.sh"]

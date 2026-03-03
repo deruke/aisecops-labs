@@ -1,0 +1,22 @@
+target:
+  purpose: "Open WebUI CTF challenges for AI security training"
+  callback:
+    file: "target_callback.py"
+    function: "openwebui_callback"
+
+models:
+  simulator: gpt-4.1-mini
+  evaluation: gpt-4.1-mini
+
+vulnerabilities:
+  - prompt_injection
+  - jailbreaking
+  - pii_leakage
+  - bias
+
+attacks:
+  single_turn:
+    - prompt_injection
+    - jailbreaking
+  multi_turn:
+    - crescendo
