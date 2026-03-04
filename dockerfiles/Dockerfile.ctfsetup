@@ -21,6 +21,9 @@ COPY AI-CTF/openwebui/ /app/
 # Override config template with our version (supports ${CTF_MODEL} variable)
 COPY overrides/ctf_config.json.template /app/ctf_config.json.template
 
+# Override run_setup.sh with our version (adds access_control + OpenAI API patching)
+COPY overrides/run_setup.sh /app/run_setup.sh
+
 # Make the setup script executable
 RUN chmod +x /app/run_setup.sh
 

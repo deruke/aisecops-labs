@@ -16,7 +16,7 @@
     "code_execution_config": {
         "enable_code_execution": true,
         "code_execution_engine": "jupyter",
-        "code_execution_jupyter_url": "http://jupyter:8888",
+        "code_execution_jupyter_url": "http://ctf-jupyter:8888",
         "code_execution_jupyter_auth": "token",
         "code_execution_jupyter_auth_token": "${JUPYTER_TOKEN}",
         "code_execution_jupyter_auth_password": "",
@@ -24,7 +24,7 @@
         "enable_code_interpreter": true,
         "code_interpreter_engine": "jupyter",
         "code_interpreter_prompt_template": "",
-        "code_interpreter_jupyter_url": "http://jupyter:8888",
+        "code_interpreter_jupyter_url": "http://ctf-jupyter:8888",
         "code_interpreter_jupyter_auth": "token",
         "code_interpreter_jupyter_auth_token": "${JUPYTER_TOKEN}",
         "code_interpreter_jupyter_auth_password": "",
