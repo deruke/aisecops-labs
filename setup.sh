@@ -170,7 +170,7 @@ echo ""
 
 # Build the profile arguments
 PROFILE_ARGS=""
-for p in "${PROFILES[@]}"; do
+for p in ${PROFILES[@]+"${PROFILES[@]}"}; do
     PROFILE_ARGS="$PROFILE_ARGS --profile $p"
 done
 
@@ -189,7 +189,7 @@ echo -e "  CTF Challenges (Open WebUI):  ${GREEN}http://localhost:4242${NC}"
 echo -e "  CTF Jupyter (challenges 7/8): ${GREEN}http://localhost:8888${NC}"
 echo -e "  Lab Notebooks (Labs 1-10):    ${GREEN}http://localhost:8889${NC}"
 echo -e "  Pipelines:                    ${GREEN}http://localhost:9099${NC}"
-if [[ " ${PROFILES[*]} " =~ " ollama " ]]; then
+if [[ " ${PROFILES[*]+"${PROFILES[*]}"} " =~ " ollama " ]]; then
     echo -e "  Ollama API:                   ${GREEN}http://localhost:11435${NC}"
 fi
 echo ""
