@@ -125,25 +125,9 @@ services:
     restart: unless-stopped
     command: start-notebook.sh --NotebookApp.token='${NOTEBOOKS_TOKEN:-aisecops2026}'
 
-  deepteam:
-    build:
-      context: ./deepteam
-    container_name: deepteam
-    profiles: ["deepteam"]
-    environment:
-      - OPENAI_API_KEY=${DEEPTEAM_API_KEY:-${OPENAI_API_KEY:-}}
-      - OPENWEBUI_URL=http://open-webui:8080
-    volumes:
-      - deepteam-results:/app/results
-      - ./deepteam/config.yaml:/app/config.yaml:ro
-    restart: "no"
-    stdin_open: true
-    tty: true
-
 volumes:
   ollama:
   open-webui:
   pipelines:
   ctf-jupyter-work:
   notebooks-work:
-  deepteam-results:
